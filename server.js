@@ -7,6 +7,7 @@ const nutritionRoutes = require("./routes/nutrition");
 const dashboardAdminRoutes = require('./routes/dashboardAdmin');
 const foodRoutes = require('./routes/food.routes');
 const scheduleRoutes = require('./routes/schedule.route');
+const AdminRoutes = require('./routes/admin.routes');
 
 
 const app = express();
@@ -19,6 +20,7 @@ app.use("/api/nutrition", nutritionRoutes);
 app.use("/api/dashboardAdmin", dashboardAdminRoutes);
 app.use("/api/foods", foodRoutes);
 app.use("/api/schedules", scheduleRoutes);
+app.use("/api/user/admin", AdminRoutes);
 
 
 // Uploads static folder

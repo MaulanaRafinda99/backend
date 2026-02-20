@@ -5,7 +5,7 @@ const mysql = require('mysql2/promise');
 const db = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
+  password: process.env.DB_PASS,
   database: process.env.DB_NAME,
 });
 
@@ -75,12 +75,10 @@ router.post('/', async (req, res) => {
   } = req.body;
 
   try {
-    await db.query(
-      `
-      INSERT INTO schedules
-      (user_id, title, type, schedule_date, schedule_time, location, notes, reminder)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-      `,
+    const [result] = await db.query(
+      `INSERT INTO schedules
+  (user_id, title, type, schedule_date, schedule_time, location, notes, reminder)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         user_id,
         title,
@@ -93,7 +91,10 @@ router.post('/', async (req, res) => {
       ],
     );
 
-    res.status(201).json({ message: 'Schedule added' });
+    res.status(201).json({
+      message: 'Schedule added',
+      id: result.insertId,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });

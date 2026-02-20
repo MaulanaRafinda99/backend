@@ -8,9 +8,27 @@ const fs = require('fs');
 const db = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
+  password: process.env.DB_PASS,
   database: process.env.DB_NAME,
 });
+
+function calculatePregnancy(startDate) {
+  if (!startDate) return null;
+
+  const start = new Date(startDate);
+  const now = new Date();
+
+  const diffMs = now - start;
+  if (diffMs < 0) return null;
+
+  const totalDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  return {
+    weeks: Math.floor(totalDays / 7),
+    days: totalDays % 7,
+    totalDays,
+  };
+}
 
 // Setup multer untuk upload
 const storage = multer.diskStorage({
@@ -46,7 +64,16 @@ router.get('/ibu', async (req, res) => {
       ORDER BY created_at DESC
     `);
 
-    res.json(rows);
+    const result = rows.map(user => {
+      const pregnancy = calculatePregnancy(user.pregnancy_start_date);
+
+      return {
+        ...user,
+        pregnancy_info: pregnancy,
+      };
+    });
+
+    res.json(result);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
@@ -65,7 +92,7 @@ router.post('/ibu', upload.single('photo'), async (req, res) => {
       address,
       birth_date,
       blood_type,
-      pregnancy_week,
+      pregnancy_start_date,
       height,
       pre_pregnancy_weight,
     } = req.body;
@@ -77,7 +104,7 @@ router.post('/ibu', upload.single('photo'), async (req, res) => {
 
     const [result] = await db.query(
       `INSERT INTO users 
-  (full_name, email, phone, address, birth_date, blood_type, pregnancy_week, height, pre_pregnancy_weight, password, role, profile_image)
+  (full_name, email, phone, address, birth_date, blood_type, pregnancy_start_date, height, pre_pregnancy_weight, password, role, profile_image)
   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'user', ?)`,
       [
         full_name,
@@ -86,7 +113,7 @@ router.post('/ibu', upload.single('photo'), async (req, res) => {
         address,
         birth_date,
         blood_type,
-        pregnancy_week,
+        pregnancy_start_date,
         height || null,
         pre_pregnancy_weight || null,
         '$2a$12$bGG.j0XrHnozDODNVBAUAOIv8yFYuIfWBGe9gbekrdvCvOS1XQXea',
@@ -126,7 +153,7 @@ router.put('/ibu/:id', upload.single('photo'), async (req, res) => {
       address,
       birth_date,
       blood_type,
-      pregnancy_week,
+      pregnancy_start_date,
       height,
       pre_pregnancy_weight,
       delete_photo,
@@ -158,7 +185,7 @@ router.put('/ibu/:id', upload.single('photo'), async (req, res) => {
         address = ?,
         birth_date = ?,
         blood_type = ?,
-        pregnancy_week = ?,
+        pregnancy_start_date = ?,
         height = ?,
         pre_pregnancy_weight = ?,
         profile_image = ?
@@ -170,7 +197,7 @@ router.put('/ibu/:id', upload.single('photo'), async (req, res) => {
         address,
         birth_date,
         blood_type,
-        pregnancy_week,
+        pregnancy_start_date,
         height || null,
         pre_pregnancy_weight || null,
         profile_image,
@@ -205,14 +232,17 @@ router.delete('/ibu/:id', async (req, res) => {
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
   try {
-    const [rows] = await db.query(
-      'SELECT id, full_name, email, phone, address, birth_date, blood_type, height, pregnancy_week, pre_pregnancy_weight, profile_image FROM users WHERE id = ?',
-      [id],
-    );
-    if (rows.length === 0) {
+    const [rows] = await db.query('SELECT * FROM users WHERE id = ?', [id]);
+
+    if (rows.length === 0)
       return res.status(404).json({ message: 'User not found' });
-    }
-    res.json(rows[0]);
+
+    const user = rows[0];
+
+    res.json({
+      ...user,
+      pregnancy_info: calculatePregnancy(user.pregnancy_start_date),
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
