@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 exports.register = async (req, res) => {
-  const { fullName, email, password, pregnancyWeek } = req.body;
+  const { fullName, email, password } = req.body;
 
   db.query(
     'SELECT * FROM users WHERE email = ?',
@@ -17,13 +17,13 @@ exports.register = async (req, res) => {
       const hashed = await bcrypt.hash(password, 10);
 
       const query = `
-        INSERT INTO users (full_name, email, pregnancy_week, password, role)
-        VALUES (?,?,?,?,?)
+        INSERT INTO users (full_name, email, password, role)
+        VALUES (?,?,?,?)
       `;
 
       db.query(
         query,
-        [fullName, email, pregnancyWeek, hashed, 'user'],
+        [fullName, email, hashed, 'user'],
         error => {
           if (error)
             return res

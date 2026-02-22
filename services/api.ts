@@ -1,7 +1,10 @@
 // src/backend/services/api.ts
 
+const BASE_URL =
+  __DEV__
+    ? "http://192.168.1.12:5000"
+    : "https://api.gizipoma.com";
 
-const BASE_URL = "https://api.m00n.my.id/";
 
 
 /* =====================
