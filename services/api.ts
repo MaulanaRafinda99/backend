@@ -2,9 +2,10 @@
 
 const BASE_URL =
   __DEV__
-    ? "http://192.168.1.12:5000"
+    ? "http://192.168.137.73:5000"
     : "https://api.m00n.my.id";
 
+// const BASE_URL = "http://192.168.1.8:5000";
 
 /* =====================
    AUTH TYPES

@@ -21,6 +21,7 @@ app.use("/api/dashboardAdmin", dashboardAdminRoutes);
 app.use("/api/foods", foodRoutes);
 app.use("/api/schedules", scheduleRoutes);
 app.use("/api/user/admin", AdminRoutes);
+app.use('/api/moduls', require('./routes/modul.routes'));
 
 
 // Uploads static folder
