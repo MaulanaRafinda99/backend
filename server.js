@@ -10,9 +10,11 @@ const scheduleRoutes = require('./routes/schedule.route');
 const AdminRoutes = require('./routes/admin.routes');
 
 
+
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
@@ -22,6 +24,7 @@ app.use("/api/foods", foodRoutes);
 app.use("/api/schedules", scheduleRoutes);
 app.use("/api/user/admin", AdminRoutes);
 app.use('/api/moduls', require('./routes/modul.routes'));
+app.use('/api/balita', require('./routes/balita.routes'));
 
 
 // Uploads static folder

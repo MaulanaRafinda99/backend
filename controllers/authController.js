@@ -3,7 +3,10 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 exports.register = async (req, res) => {
-  const { fullName, email, password } = req.body;
+  const { fullName, email, password, role } = req.body;
+
+  const allowedRoles = ['user', 'ibu_balita'];
+  const userRole = allowedRoles.includes(role) ? role : 'user';
 
   db.query(
     'SELECT * FROM users WHERE email = ?',
@@ -23,7 +26,7 @@ exports.register = async (req, res) => {
 
       db.query(
         query,
-        [fullName, email, hashed, 'user'],
+        [fullName, email, hashed, userRole],
         error => {
           if (error)
             return res
